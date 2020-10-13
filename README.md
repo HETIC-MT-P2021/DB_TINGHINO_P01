@@ -10,7 +10,7 @@ Configure the development environment on your local machine:
 ```bash
 $ git clone https://github.com/HETIC-MT-P2021/DB_TINGHINO_P01.git
 $ cd DB_TINGHINO_P01
-$ make up
+$ make compose:up
 ```
 
 You can now access the api: [http://localhost:1323/](http://localhost:1323/).
