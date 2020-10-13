@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/HETIC-MT-P2021/DB_TINGHINO_P01/db"
+	"github.com/HETIC-MT-P2021/DB_TINGHINO_P01/routes"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
-
-	"github.com/HETIC-MT-P2021/DB_TINGHINO_P01/db"
-	"github.com/HETIC-MT-P2021/DB_TINGHINO_P01/routes"
 )
 
 // initConfig set all configuration for the project
