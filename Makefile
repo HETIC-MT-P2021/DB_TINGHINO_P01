@@ -47,8 +47,27 @@ compose/purge/all: ## Stops and deletes containers, volumes, images (all) and ne
 .PHONY: compose/rebuild
 compose/rebuild: compose/down compose/build compose/up ## Rebuild the project
 
-.PHONY: lint
-lint: ## Run golangci-lint (All-In-One config)
+DOCKER_INPECT_FORMAT__AWK ?= "'\''{{.Name}} : {{range $$p, $$confs := .NetworkSettings.Ports}}{{range $$conf := $$confs}}{{$$p}} -> {{$$conf.HostIp}}:{{$$conf.HostPort}}{{else}}{{$$p}} -> Not exposed{{end}}\t{{else}}No exposed ports{{end}}'\''"
+
+.PHONY: docker/urls
+docker/urls: ## Get project's URL
+	@echo "------------------------------------------------------------"
+	@echo "You can access your project at the following URLS:"
+	@echo "------------------------------------------------------------"
+	@$(DOCKER_COMPOSE) ps -q | awk '{ \
+		cmd_docker_inspect = sprintf("docker inspect --format=%s %s", ${DOCKER_INPECT_FORMAT__AWK}, $$0) ; \
+		cmd_docker_inspect | getline docker_inspect ; close(cmd_docker_inspect) ; \
+		gsub(/0.0.0.0/, "http://localhost", docker_inspect) ; \
+		split(docker_inspect, urls, "\t") ; \
+		printf "\n%s\n", urls[1] ; \
+		i = 2 ; while (i < length(urls)) { \
+		index_tab = index(docker_inspect,":") ; \
+		printf "%*s %s\n", index_tab, "", urls[i]; i++ \
+		} ; \
+	}'
+
+.PHONY: go/lint
+go/lint: ## Run golangci-lint (All-In-One config)
 	@docker run --rm -v ${PWD}${GO_WORKDIR}:/app -w /app golangci/golangci-lint golangci-lint run --out-format tab | \
 	awk -F '[[:space:]][[:space:]]+' '{ \
 		error_file = $$1 ; \
@@ -72,7 +91,6 @@ lint: ## Run golangci-lint (All-In-One config)
 		\
 		printf "\n\033[31m\033[1m%*s\033[m", error_col_number + length(error_line_number) + 2, "^" ; \
 	} END { printf "\n\033[31m%s errors detected\n", NR	}'
-
 
 %:
 	@$(MAKE) -s $(subst :,/,$@)
